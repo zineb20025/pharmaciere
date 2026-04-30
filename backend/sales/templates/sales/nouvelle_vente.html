@@ -1,0 +1,137 @@
+{% extends 'products/base.html' %}
+{% load static %}
+
+{% block title %}Nouvelle Vente - Version Originale{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fa-solid fa-cash-register me-2"></i>Nouvelle Vente (Version Originale)</h4>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post" id="venteForm">
+                    {% csrf_token %}
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Nom Client</label>
+                            <input type="text" class="form-control" name="nom_client" placeholder="Client anonyme" maxlength="200">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Caissier</label>
+                            <input type="text" class="form-control bg-light" value="{{ user.username }}" readonly>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Catégorie</label>
+                            <select class="form-select" id="categorieSelect" name="categorie">
+                                <option value="">-- Toutes catégories --</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat }}">{{ cat }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Médicament</label>
+                            <select class="form-select" id="medicamentSelect" name="medicament_id">
+                                <option value="">-- Sélectionner un médicament --</option>
+                                {% for med in medicaments %}
+                                    <option value="{{ med.id }}" data-categorie="{{ med.categorie }}" data-prix="{{ med.prix_vente }}" style="display: block;">
+{{ med.nom }} ({{ med.prix_vente }} DH)
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Quantité</label>
+                            <input type="number" class="form-control" id="quantite" name="quantite" min="1" value="1">
+                        </div>
+                        <div class="col-md-4">
+Prix Unitaire (DH)
+                            <input type="number" class="form-control" id="prix_unitaire" name="prix_unitaire" step="0.01" min="0" value="0">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Total</label>
+                            <input type="text" class="form-control bg-success text-white fw-bold" id="total" readonly value="0 DH">
+                        </div>
+                    </div>
+
+                    <div class="d-grid d-md-flex gap-2 justify-content-md-end">
+                        <a href="{% url 'liste_ventes' %}" class="btn btn-secondary">
+                            <i class="fa-solid fa-arrow-left me-2"></i>Annuler
+                        </a>
+                        <button type="submit" class="btn btn-success btn-lg" id="submitBtn" disabled>
+                            <i class="fa-solid fa-save me-2"></i>Enregistrer Vente & Imprimer Facture
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const categorieSelect = document.getElementById('categorieSelect');
+    const medicamentSelect = document.getElementById('medicamentSelect');
+    const quantite = document.getElementById('quantite');
+    const prixUnitaire = document.getElementById('prix_unitaire');
+    const total = document.getElementById('total');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Filtrer médicaments par catégorie
+    categorieSelect.addEventListener('change', filterMedicaments);
+    function filterMedicaments() {
+        const cat = categorieSelect.value;
+        Array.from(medicamentSelect.options).forEach(option => {
+            if (option.value === '') return;
+            option.style.display = (cat === '' || option.dataset.categorie === cat) ? 'block' : 'none';
+        });
+        medicamentSelect.value = '';
+        updateTotal();
+    }
+
+    // Update prix default et total
+    medicamentSelect.addEventListener('change', function() {
+        const prix = this.options[this.selectedIndex].dataset.prix;
+        prixUnitaire.value = prix || 0;
+        updateTotal();
+    });
+
+    quantite.addEventListener('input', updateTotal);
+    prixUnitaire.addEventListener('input', updateTotal);
+
+    function updateTotal() {
+        const qte = parseInt(quantite.value) || 0;
+        const prix = parseFloat(prixUnitaire.value) || 0;
+        const tot = qte * prix;
+        total.value = tot.toLocaleString('fr-FR') + ' DH';
+        submitBtn.disabled = !medicamentSelect.value || qte <= 0 || prix <= 0;
+    }
+
+    // Submit validation
+    document.getElementById('venteForm').addEventListener('submit', function(e) {
+        if (!medicamentSelect.value || !quantite.value || !prixUnitaire.value) {
+            e.preventDefault();
+            alert('Veuillez remplir tous les champs !');
+        }
+    });
+});
+</script>
+{% endblock %}
+

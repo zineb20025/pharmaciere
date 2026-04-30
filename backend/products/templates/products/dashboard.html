@@ -1,0 +1,177 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Dashboard - Gestion Pharmacie{% endblock %}
+
+{% block content %}
+<div class="header-section">
+    <h2 class="fw-bold text-dark">Tableau de Bord de l'Officine</h2>
+    <p class="text-muted">Aperçu en temps réel de votre stock et de vos ventes.</p>
+</div>
+
+{% if messages %}
+<div class="row">
+    <div class="col-md-12">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="row text-center">
+    <div class="col-md-4 mb-4">
+        <div class="card p-4 bg-primary text-white">
+            <h5 class="text-uppercase small fw-bold"><i class="fa-solid fa-pills"></i> Total Produits</h5>
+            <p class="display-5 fw-bold">{{ total_medicaments }}</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card p-4 bg-danger text-white">
+            <h5 class="text-uppercase small fw-bold"><i class="fa-solid fa-triangle-exclamation"></i> Alertes Stock Bas</h5>
+            <p class="display-5 fw-bold">{{ alertes_stock }}</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card p-4 bg-success text-white">
+            <h5 class="text-uppercase small fw-bold"><i class="fa-solid fa-cart-shopping"></i> Ventes Totales</h5>
+            <p class="display-5 fw-bold">{{ total_ventes }}</p>
+        </div>
+    </div>
+</div>
+<div class="row text-center">
+    <div class="col-md-4 mb-4">
+        <div class="card p-4 bg-info text-white">
+            <h5 class="text-uppercase small fw-bold"><i class="fa-solid fa-warehouse"></i> Valeur Totale du Stock</h5>
+            <p class="display-5 fw-bold">{{ valeur_totale_stock }} DH</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card p-4 bg-warning text-dark">
+            <h5 class="text-uppercase small fw-bold"><i class="fa-solid fa-percent"></i> Marge Moyenne</h5>
+            <p class="display-5 fw-bold">{{ marge_moyenne }}%</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card p-4 bg-success text-white">
+            <h5 class="text-uppercase small fw-bold"><i class="fa-solid fa-sack-dollar"></i> Chiffre d'Affaires</h5>
+            <p class="display-5 fw-bold">{{ chiffre_affaires }} DH</p>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold">🛒 Dernières Ventes</h4>
+                {% if user.role == 'admin' or user.role == 'pharmacien' %}
+                <a href="{% url 'liste_ventes' %}" class="btn btn-outline-primary btn-sm">Voir tout</a>
+                {% endif %}
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Date</th>
+                            <th>Employé</th>
+                            <th>Nb. Articles</th>
+                            <th class="text-end">Total (DH)</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for vente in dernieres_ventes %}
+                        <tr>
+                            <td class="fw-bold">Vente #{{ vente.id }}</td>
+                            <td>{{ vente.date_vente|date:"d/m/Y H:i" }}</td>
+                            <td>{{ vente.employe.username }}</td>
+                            <td>{{ vente.lignes.count }}</td>
+                            <td class="text-end fw-bold text-success">{{ vente.total }} DH</td>
+                            <td class="text-center">
+                                <a href="{% url 'detail_vente' vente.id %}" class="btn btn-info btn-sm text-white">👁 Détails</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">Aucune vente enregistrée.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold">📦 État du Stock Actuel</h4>
+                {% if user.role == 'admin' or user.role == 'pharmacien' %}
+<a href="{% url 'ajouter_medicament' %}" class="btn btn-outline-primary btn-sm">+ Nouveau Médicament</a>
+                {% endif %}
+            </div>
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nom du Médicament</th>
+                        <th>Catégorie</th>
+                        <th class="text-center">Prix d'Achat (DH)</th>
+                        <th class="text-center">Prix de Vente (DH)</th>
+                        <th class="text-center">Marge (%)</th>
+                        <th class="text-center">Quantité en Stock</th>
+                        {% if user.role == 'admin' or user.role == 'pharmacien' %}
+                        <th class="text-center">Action</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for med in liste_medicaments %}
+                    <tr>
+                        <td class="fw-bold">{{ med.nom }}</td>
+                        <td><span class="text-muted">{{ med.categorie }}</span></td>
+                        <td class="text-center">{{ med.prix_achat }} DH</td>
+                        <td class="text-center">
+                            {% if user.role == 'admin' or user.role == 'pharmacien' %}
+                            <form method="post" action="{% url 'modifier_prix' med.id %}" class="d-inline-flex align-items-center gap-2">
+                                {% csrf_token %}
+                                <input type="number" name="prix_unitaire" value="{{ med.prix_vente }}" step="0.01" min="0.01" class="form-control form-control-sm text-center" style="width: 100px;" required>
+                                <button type="submit" class="btn btn-warning btn-sm">💾</button>
+                            </form>
+                            {% else %}
+                            {{ med.prix_vente }} DH
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge rounded-pill {% if med.marge_percent < 20 %}bg-danger{% elif med.marge_percent > 35 %}bg-warning text-dark{% else %}bg-success{% endif %}" style="font-size: 0.9rem;">
+                                {{ med.marge_percent }}%
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge rounded-pill {% if med.quantite_stock < 10 %}bg-danger{% else %}bg-success{% endif %}" style="font-size: 0.9rem;">
+                                {{ med.quantite_stock }} unités
+                            </span>
+                        </td>
+                        {% if user.role == 'admin' or user.role == 'pharmacien' %}
+                        <td class="text-center">
+                            <a href="{% url 'modifier_medicament' med.id %}" class="btn btn-outline-primary btn-sm">✏️ Modifier</a>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{% if user.role == 'admin' or user.role == 'pharmacien' %}7{% else %}6{% endif %}" class="text-center py-4 text-muted">Aucune donnée disponible dans l'inventaire.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

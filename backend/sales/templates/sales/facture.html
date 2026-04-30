@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Facture #{{ vente.id }} - Pharma KAZM</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.4; color: #333; }
+        .container { max-width: 210mm; margin: 0 auto; padding: 20mm; }
+        .header { text-align: center; border-bottom: 2px solid #007bff; padding-bottom: 10mm; margin-bottom: 10mm; }
+        .logo { font-size: 24pt; font-weight: bold; color: #007bff; margin-bottom: 5mm; }
+        .info { font-size: 10pt; margin: 2mm 0; }
+        .facture-title { font-size: 18pt; font-weight: bold; margin: 10mm 0 5mm 0; }
+        table { width: 100%; border-collapse: collapse; margin: 10mm 0; }
+        th, td { padding: 4mm 2mm; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; font-weight: bold; text-align: center; }
+        .total-row td { border-top: 2px solid #007bff; font-weight: bold; font-size: 14pt; }
+        .total-montant { text-align: right; color: #007bff; }
+        .footer { margin-top: 20mm; text-align: center; font-size: 10pt; border-top: 1px solid #ddd; padding-top: 5mm; }
+        @media print { body { margin: 0; } .no-print { display: none; } }
+        .btn-print { background: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Pharma KAZM</div>
+            <div class="info">Pharmacie Moderne - N° Agrément: PHA/001/2024</div>
+            <div class="info">Adresse: Centre-Ville, KAZM | Tél: +225 XX XX XX XX</div>
+            <div class="info">Email: contact@pharmakazm.com</div>
+        </div>
+
+        <div class="facture-title">FACTURE DE VENTE #{{ vente.id }}</div>
+
+        <table>
+            <tr>
+                <th>Date</th>
+                <th>Caissier</th>
+                <th>Client</th>
+            </tr>
+            <tr>
+                <td>{{ vente.date_vente|date:"d/m/Y H:i" }}</td>
+                <td>{{ vente.employe.username }}</td>
+                <td>{{ vente.nom_client|default:"Client anonyme" }}</td>
+            </tr>
+        </table>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 50%;">Désignation</th>
+                    <th style="width: 15%;">Qté</th>
+                    <th style="width: 20%;">P.U.</th>
+                    <th style="width: 15%;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ligne in vente.lignes.all %}
+                <tr>
+                    <td>{{ ligne.medicament.nom }} ({{ ligne.medicament.categorie }})</td>
+                    <td style="text-align: center;">{{ ligne.quantite }}</td>
+                    <td style="text-align: right;">{{ ligne.prix_unitaire }} DH</td>
+                    <td style="text-align: right;">{{ ligne.sous_total }} DH</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4">Aucune ligne</td></tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="3">TOTAL GENERAL :</td>
+                    <td class="total-montant">{{ vente.total }} DH</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="footer">
+            <div>Merci pour votre confiance !</div>
+            <div>Pharma KAZM - Qualité & Confiance</div>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;" class="no-print">
+        <button onclick="window.print()" class="btn-print">
+            <i class="fa-solid fa-print"></i> Imprimer Facture
+        </button>
+        <br><br>
+        <a href="{% url 'liste_ventes' %}" class="btn btn-secondary no-print" style="margin-top: 10px;">
+            <i class="fa-solid fa-list"></i> Retour aux Ventes
+        </a>
+    </div>
+
+    <script>
+        // Auto-print option
+        // window.onload = () => window.print();
+    </script>
+</body>
+</html>

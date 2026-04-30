@@ -1,0 +1,29 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Permissions par Rôle - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark"><i class="fa-solid fa-user-shield"></i> Permissions par Rôle</h2>
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left"></i> Retour</a>
+</div>
+
+<div class="row">
+    {% for role_key, role_info in roles_permissions.items %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-{{ role_info.color }}">
+            <div class="card-header bg-{{ role_info.color }} text-white text-center">
+                <h4 class="fw-bold mb-0"><i class="fa-solid {{ role_info.icon }}"></i> {{ role_info.label }}</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for perm in role_info.permissions %}
+                    <li class="list-group-item"><i class="fa-solid fa-check text-success me-2"></i> {{ perm }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Gestion des Employés - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark"><i class="fa-solid fa-users"></i> Gestion des Employés</h2>
+    <a href="{% url 'ajouter_employe' %}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Ajouter un Employé</a>
+</div>
+
+{% if messages %}
+<div class="row mb-3">
+    <div class="col-md-12">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="card p-4 mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-4">
+            <label for="q" class="form-label fw-bold"><i class="fa-solid fa-magnifying-glass"></i> Rechercher</label>
+            <input type="text" class="form-control" id="q" name="q" value="{{ q }}" placeholder="Nom, email, téléphone...">
+        </div>
+        <div class="col-md-3">
+            <label for="role" class="form-label fw-bold"><i class="fa-solid fa-filter"></i> Rôle</label>
+            <select class="form-select" id="role" name="role">
+                <option value="">Tous les rôles</option>
+                {% for value, label in roles %}
+                <option value="{{ value }}" {% if role_filter == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="statut" class="form-label fw-bold"><i class="fa-solid fa-toggle-on"></i> Statut</label>
+            <select class="form-select" id="statut" name="statut">
+                <option value="">Tous les statuts</option>
+                <option value="actif" {% if statut_filter == 'actif' %}selected{% endif %}>Actif</option>
+                <option value="inactif" {% if statut_filter == 'inactif' %}selected{% endif %}>Inactif</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-outline-primary"><i class="fa-solid fa-filter"></i> Filtrer</button>
+            <a href="{% url 'liste_employes' %}" class="btn btn-outline-secondary btn-sm mt-2"><i class="fa-solid fa-rotate-left"></i> Réinitialiser</a>
+        </div>
+    </form>
+</div>
+
+<div class="card p-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Nom d'utilisateur</th>
+                    <th>Nom complet</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th>Rôle</th>
+                    <th>Statut</th>
+                    <th>Date d'ajout</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emp in employes %}
+                <tr {% if not emp.is_active %}class="table-secondary"{% endif %}>
+                    <td class="fw-bold">{{ emp.username }}</td>
+                    <td>{{ emp.first_name }} {{ emp.last_name }}</td>
+                    <td>{{ emp.email|default:"—" }}</td>
+                    <td>{{ emp.telephone|default:"—" }}</td>
+                    <td>
+                        <span class="badge rounded-pill 
+                            {% if emp.role == 'admin' %}bg-danger
+                            {% elif emp.role == 'pharmacien' %}bg-primary
+                            {% else %}bg-secondary{% endif %}">
+                            {{ emp.get_role_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge rounded-pill {% if emp.is_active %}bg-success{% else %}bg-dark{% endif %}">
+                            {% if emp.is_active %}<i class="fa-solid fa-circle-check"></i> Actif{% else %}<i class="fa-solid fa-circle-xmark"></i> Inactif{% endif %}
+                        </span>
+                    </td>
+                    <td>{{ emp.date_joined|date:"d/m/Y H:i" }}</td>
+                    <td class="text-center">
+                        <a href="{% url 'modifier_employe' emp.id %}" class="btn btn-sm btn-outline-primary" title="Modifier"><i class="fa-solid fa-pen"></i></a>
+                        {% if emp != user %}
+                        <a href="{% url 'toggle_statut_employe' emp.id %}" class="btn btn-sm {% if emp.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %} ms-1" title="{% if emp.is_active %}Désactiver{% else %}Activer{% endif %}">
+                            <i class="fa-solid {% if emp.is_active %}fa-user-slash{% else %}fa-user-check{% endif %}"></i>
+                        </a>
+                        <a href="{% url 'supprimer_employe' emp.id %}" class="btn btn-sm btn-outline-danger ms-1" title="Supprimer"><i class="fa-solid fa-trash"></i></a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">Aucun employé trouvé.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left"></i> Retour à l'Administration</a>
+</div>
+{% endblock %}

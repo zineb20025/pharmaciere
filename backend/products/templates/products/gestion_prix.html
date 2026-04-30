@@ -1,0 +1,221 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Gestion des Prix - Pharma KAZM{% endblock %}
+
+{% block content %}
+<div class="header-section d-flex justify-content-between align-items-center">
+    <div>
+        <h2 class="fw-bold text-dark">💰 Gestion des Prix</h2>
+        <p class="text-muted">Modifier les prix d'achat et de vente de chaque médicament.</p>
+    </div>
+    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">← Retour au Tableau de Bord</a>
+</div>
+
+{% if messages %}
+<div class="row">
+    <div class="col-md-12">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<div class="card p-4 mb-4">
+    <form method="get" class="row g-3 align-items-end" id="filter-form">
+        <div class="col-md-4">
+            <label for="categorie" class="form-label fw-bold">Filtrer par catégorie</label>
+            <select name="categorie" id="categorie" class="form-select">
+                <option value="">Toutes les catégories</option>
+                {% for cat in categories %}
+                <option value="{{ cat }}" {% if categorie_filter == cat %}selected{% endif %}>{{ cat }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <a href="{% url 'gestion_prix' %}" class="btn btn-outline-secondary w-100">Réinitialiser</a>
+        </div>
+    </form>
+</div>
+
+<div class="card p-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle" id="prix-table">
+            <thead class="table-light">
+                <tr>
+                    <th>Nom du Médicament</th>
+                    <th>Catégorie</th>
+                    <th class="text-center">Prix d'Achat (DH)</th>
+                    <th class="text-center">Prix de Vente (DH)</th>
+                    <th class="text-center">Marge (%)</th>
+                    <th class="text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for med in medicaments %}
+                <tr data-id="{{ med.id }}" data-update-url="{% url 'update_prix' med.id %}">
+                    <td class="fw-bold">{{ med.nom }}</td>
+                    <td><span class="badge bg-secondary">{{ med.categorie }}</span></td>
+                    <td class="text-center">
+                        <input type="number" name="prix_achat" value="{{ med.prix_achat|floatformat:2 }}" step="0.01" min="0.01"
+                            class="form-control form-control-sm text-center prix-achat"
+                            style="width: 110px; margin: 0 auto;" data-original="{{ med.prix_achat|floatformat:2 }}" required>
+                    </td>
+                    <td class="text-center">
+                        <input type="number" name="prix_vente" value="{{ med.prix_vente|floatformat:2 }}" step="0.01" min="0.01"
+                            class="form-control form-control-sm text-center prix-vente"
+                            style="width: 110px; margin: 0 auto;" data-original="{{ med.prix_vente|floatformat:2 }}" required>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge rounded-pill marge-badge {% if med.marge_percent < 20 %}bg-danger{% elif med.marge_percent > 35 %}bg-warning text-dark{% else %}bg-success{% endif %}"
+                            style="font-size: 0.9rem;">
+                            {{ med.marge_percent }}%
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-primary btn-sm btn-save" data-medicament-id="{{ med.id }}" disabled aria-label="Sauvegarder les prix">
+                            💾
+                        </button>
+                        <span class="save-status ms-1" style="font-size: 0.8rem;"></span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">Aucun médicament trouvé.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit du filtre de catégorie
+    const categorieSelect = document.getElementById('categorie');
+    if (categorieSelect) {
+        categorieSelect.addEventListener('change', function() {
+            this.form.submit();
+        });
+    }
+
+    // Gestion des inputs de prix
+    document.querySelectorAll('#prix-table tbody tr').forEach(function(row) {
+        const inputs = row.querySelectorAll('.prix-achat, .prix-vente');
+        inputs.forEach(function(input) {
+            input.addEventListener('input', function() {
+                calculateMarge(row);
+                checkChanges(row);
+            });
+        });
+
+        // Gestion du clic sur le bouton sauvegarder
+        const btnSave = row.querySelector('.btn-save');
+        if (btnSave) {
+            btnSave.addEventListener('click', function() {
+                const medicamentId = this.dataset.medicamentId;
+                savePrix(medicamentId, row);
+            });
+        }
+    });
+});
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function calculateMarge(row) {
+    const prixAchat = parseFloat(row.querySelector('.prix-achat').value) || 0;
+    const prixVente = parseFloat(row.querySelector('.prix-vente').value) || 0;
+    const margeBadge = row.querySelector('.marge-badge');
+    
+    if (prixAchat > 0) {
+        const marge = ((prixVente - prixAchat) / prixAchat) * 100;
+        margeBadge.textContent = marge.toFixed(2) + '%';
+        
+        margeBadge.classList.remove('bg-danger', 'bg-success', 'bg-warning', 'text-dark');
+        if (marge < 20) {
+            margeBadge.classList.add('bg-danger');
+        } else if (marge > 35) {
+            margeBadge.classList.add('bg-warning', 'text-dark');
+        } else {
+            margeBadge.classList.add('bg-success');
+        }
+    } else {
+        margeBadge.textContent = '0%';
+    }
+}
+
+function checkChanges(row) {
+    const btnSave = row.querySelector('.btn-save');
+    const prixAchatInput = row.querySelector('.prix-achat');
+    const prixVenteInput = row.querySelector('.prix-vente');
+    
+    const achatChanged = parseFloat(prixAchatInput.value) !== parseFloat(prixAchatInput.dataset.original);
+    const venteChanged = parseFloat(prixVenteInput.value) !== parseFloat(prixVenteInput.dataset.original);
+    
+    btnSave.disabled = !(achatChanged || venteChanged);
+}
+
+function savePrix(medicamentId, row) {
+    const btnSave = row.querySelector('.btn-save');
+    const statusSpan = row.querySelector('.save-status');
+    const prixAchatInput = row.querySelector('.prix-achat');
+    const prixVenteInput = row.querySelector('.prix-vente');
+    const updateUrl = row.dataset.updateUrl;
+    
+    const data = {
+        prix_achat: prixAchatInput.value,
+        prix_vente: prixVenteInput.value
+    };
+    
+    btnSave.disabled = true;
+    statusSpan.textContent = 'Sauvegarde...';
+    statusSpan.className = 'save-status ms-1 text-muted';
+    
+    fetch(updateUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(data)
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(result) {
+        if (result.success) {
+            statusSpan.textContent = '✓ Enregistré';
+            statusSpan.className = 'save-status ms-1 text-success';
+            
+            prixAchatInput.dataset.original = prixAchatInput.value;
+            prixVenteInput.dataset.original = prixVenteInput.value;
+            
+            setTimeout(function() {
+                statusSpan.textContent = '';
+            }, 2000);
+        } else {
+            statusSpan.textContent = '✗ ' + (result.error || 'Erreur');
+            statusSpan.className = 'save-status ms-1 text-danger';
+            btnSave.disabled = false;
+        }
+    })
+    .catch(function(error) {
+        statusSpan.textContent = '✗ Erreur réseau';
+        statusSpan.className = 'save-status ms-1 text-danger';
+        btnSave.disabled = false;
+    });
+}
+</script>
+{% endblock %}

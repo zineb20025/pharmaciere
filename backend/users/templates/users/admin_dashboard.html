@@ -1,0 +1,138 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Administration - Pharma KAZM{% endblock %}
+
+{% block content %}
+<div class="header-section text-center mb-5">
+    <h1 class="fw-bold text-dark"><i class="fa-solid fa-shield-halved"></i> Interface d'Administration</h1>
+    <p class="text-muted">Gestion complète de votre officine.</p>
+</div>
+
+{% if messages %}
+<div class="row">
+    <div class="col-md-12">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="row text-center mb-4">
+    {% if user.is_authenticated %}
+    <div class="col-md-3 mb-4">
+        <a href="{% url 'liste_employes' %}" class="text-decoration-none">
+            <div class="card p-4 bg-primary text-white">
+                <h5 class="text-uppercase small fw-bold"><i class="fa-solid fa-users"></i> Employés</h5>
+                <p class="display-5 fw-bold">{{ total_employes }}</p>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+    <div class="col-md-3 mb-4">
+        <div class="card p-4 bg-info text-white">
+            <h5 class="text-uppercase small fw-bold"><i class="fa-solid fa-sack-dollar"></i> Chiffre d'Affaires Total</h5>
+            <p class="display-5 fw-bold">{{ chiffre_affaires_total }} DH</p>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card p-4 bg-warning text-dark">
+            <h5 class="text-uppercase small fw-bold"><i class="fa-solid fa-triangle-exclamation"></i> Alertes Stock Bas</h5>
+            <p class="display-5 fw-bold">{{ alertes_stock }}</p>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card p-4 bg-success text-white">
+            <h5 class="text-uppercase small fw-bold"><i class="fa-solid fa-truck-field"></i> Fournisseurs</h5>
+            <p class="display-5 fw-bold">{{ total_fournisseurs }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- NOUVEAU : Barre actions rapides pour employés -->
+<div class="row mb-4">
+    {% if user.is_authenticated %}
+    <div class="col-12">
+        <h4 class="text-center mb-3"><i class="fa-solid fa-users text-primary me-2"></i> Actions Rapides - Gestion des Employés</h4>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="{% url 'liste_employes' %}" class="btn btn-primary btn-lg">
+                <i class="fa-solid fa-list"></i> Voir la Liste
+            </a>
+            <a href="{% url 'ajouter_employe' %}" class="btn btn-success btn-lg">
+                <i class="fa-solid fa-plus"></i> Ajouter un Employé
+            </a>
+            <a href="{% url 'permissions_roles' %}" class="btn btn-info btn-lg">
+                <i class="fa-solid fa-key"></i> Permissions & Rôles
+            </a>
+        </div>
+        <p class="text-center text-muted mt-2 small">Accès direct à la gestion complète du personnel.</p>
+    </div>
+    {% endif %}
+</div>
+
+<div class="row">
+    {% if user.is_authenticated %}
+    <div class="col-md-4 mb-4">
+        <div class="card p-4 text-center h-100">
+            <div class="mb-3 fs-1"><i class="fa-solid fa-users"></i></div>
+            <h4 class="fw-bold">Gestion des Employés</h4>
+            <p class="text-muted">Gérer les employés et leurs informations.</p>
+            <a href="{% url 'liste_employes' %}" class="btn btn-outline-primary w-100">Aller à la Liste Complète</a>
+        </div>
+    </div>
+    {% endif %}
+    <div class="col-md-4 mb-4">
+        <div class="card p-4 text-center h-100">
+            <div class="mb-3 fs-1"><i class="fa-solid fa-truck-field"></i></div>
+            <h4 class="fw-bold">Gestion des Fournisseurs</h4>
+            <p class="text-muted">Gérer vos fournisseurs et leurs informations de contact.</p>
+            <a href="{% url 'liste_fournisseurs' %}" class="btn btn-outline-primary w-100">Accéder</a>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card p-4 text-center h-100">
+            <div class="mb-3 fs-1"><i class="fa-solid fa-boxes-stacked"></i></div>
+            <h4 class="fw-bold">Approvisionnements</h4>
+            <p class="text-muted">Enregistrer et suivre les réceptions de stock.</p>
+            <a href="{% url 'liste_approvisionnements' %}" class="btn btn-outline-warning w-100">Accéder</a>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card p-4 text-center h-100">
+            <div class="mb-3 fs-1"><i class="fa-solid fa-chart-line"></i></div>
+            <h4 class="fw-bold">Tableau de Bord Global</h4>
+            <p class="text-muted">Retourner au tableau de bord principal avec les ventes et stocks.</p>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-info w-100">Accéder</a>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card p-4 text-center h-100">
+            <div class="mb-3 fs-1"><i class="fa-solid fa-tags"></i></div>
+            <h4 class="fw-bold">Gestion des Prix</h4>
+            <p class="text-muted">Modifier les prix d'achat et de vente des médicaments.</p>
+            <a href="{% url 'gestion_prix' %}" class="btn btn-outline-success w-100">Accéder</a>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card p-4 text-center h-100">
+            <div class="mb-3 fs-1"><i class="fa-solid fa-cart-shopping"></i></div>
+            <h4 class="fw-bold">Gestion des Ventes</h4>
+            <p class="text-muted">Consulter l'historique et créer de nouvelles ventes.</p>
+            <a href="{% url 'liste_ventes' %}" class="btn btn-outline-dark w-100">Accéder</a>
+        </div>
+    </div>
+    {% if user.role == 'admin' %}
+    <div class="col-md-4 mb-4">
+        <div class="card p-4 text-center h-100">
+            <div class="mb-3 fs-1"><i class="fa-solid fa-user-shield"></i></div>
+            <h4 class="fw-bold">Permissions par Rôle</h4>
+            <p class="text-muted">Consulter la matrice des permissions associées à chaque rôle.</p>
+            <a href="{% url 'permissions_roles' %}" class="btn btn-outline-danger w-100">Accéder</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

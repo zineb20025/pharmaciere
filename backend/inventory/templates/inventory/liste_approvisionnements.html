@@ -1,0 +1,56 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Approvisionnements - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark">📦 Historique des Approvisionnements</h2>
+    <a href="{% url 'ajouter_approvisionnement' %}" class="btn btn-warning text-dark fw-bold">+ Nouvel Approvisionnement</a>
+</div>
+
+{% if messages %}
+<div class="row mb-3">
+    <div class="col-md-12">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<div class="card p-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Date</th>
+                    <th>Médicament</th>
+                    <th>Fournisseur</th>
+                    <th class="text-center">Quantité Reçue</th>
+                    <th class="text-center">Stock Après Réception</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in approvisionnements %}
+                <tr>
+                    <td>{{ a.date_reception|date:"d/m/Y H:i" }}</td>
+                    <td class="fw-bold">{{ a.medicament.nom }}</td>
+                    <td>{{ a.fournisseur.nom|default:"—" }}</td>
+                    <td class="text-center"><span class="badge bg-success">{{ a.quantite_recue }}</span></td>
+                    <td class="text-center"><span class="badge bg-info text-dark">{{ a.medicament.quantite_stock }}</span></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">Aucun approvisionnement enregistré.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+<div class="mt-3">
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">← Retour à l'Administration</a>
+</div>
+{% endblock %}

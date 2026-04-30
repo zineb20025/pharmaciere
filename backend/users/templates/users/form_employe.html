@@ -1,0 +1,107 @@
+{% extends 'products/base.html' %}
+
+{% block title %}{% if employe %}Modifier{% else %}Ajouter{% endif %} un Employé - Admin{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card p-4">
+            <h2 class="fw-bold text-dark mb-4">
+                {% if employe %}
+                    <i class="fa-solid fa-pen"></i> Modifier l'Employé
+                {% else %}
+                    <i class="fa-solid fa-user-plus"></i> Ajouter un Nouvel Employé
+                {% endif %}
+            </h2>
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="username" class="form-label fw-bold">Nom d'utilisateur</label>
+                    <input type="text" class="form-control" id="username" name="username"
+                           value="{{ employe.username|default:'' }}" {% if employe %}readonly{% endif %} required>
+                    {% if employe %}<div class="form-text">Le nom d'utilisateur ne peut pas être modifié.</div>{% endif %}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="first_name" class="form-label">Prénom</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name"
+                               value="{{ employe.first_name|default:'' }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="last_name" class="form-label">Nom</label>
+                        <input type="text" class="form-control" id="last_name" name="last_name"
+                               value="{{ employe.last_name|default:'' }}">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email"
+                           value="{{ employe.email|default:'' }}">
+                </div>
+
+                <div class="mb-3">
+                    <label for="telephone" class="form-label">Téléphone</label>
+                    <input type="text" class="form-control" id="telephone" name="telephone"
+                           value="{{ employe.telephone|default:'' }}">
+                </div>
+
+                <div class="mb-3">
+                    <label for="role" class="form-label fw-bold">Rôle</label>
+                    <select class="form-select" id="role" name="role" required>
+                        <option value="admin" {% if employe.role == 'admin' %}selected{% endif %}>Admin</option>
+                        <option value="pharmacien" {% if employe.role == 'pharmacien' %}selected{% endif %}>Pharmacien</option>
+                        <option value="caissier" {% if employe.role == 'caissier' %}selected{% endif %}>Caissier</option>
+                    </select>
+                    <div class="form-text text-muted mt-2" id="role-help">
+                        <i class="fa-solid fa-circle-info"></i>
+                        {% if employe %}
+                            <a href="{% url 'permissions_roles' %}" target="_blank">Voir les permissions par rôle</a>
+                        {% else %}
+                            <a href="{% url 'permissions_roles' %}" target="_blank">Voir les permissions par rôle</a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if employe %}
+                <div class="mb-3 form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="is_active" name="is_active" {% if employe.is_active %}checked{% endif %}>
+                    <label class="form-check-label fw-bold" for="is_active">Employé actif</label>
+                    <div class="form-text">Désactiver un employé l'empêchera de se connecter à l'application.</div>
+                </div>
+                {% endif %}
+
+                <div class="mb-4">
+                    <label for="password" class="form-label fw-bold">
+                        {% if employe %}
+                            Nouveau mot de passe <span class="fw-normal text-muted">(laisser vide pour ne pas changer)</span>
+                        {% else %}
+                            Mot de passe <span class="text-danger">*</span>
+                        {% endif %}
+                    </label>
+                    <input type="password" class="form-control" id="password" name="password" {% if not employe %}required{% endif %}>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'liste_employes' %}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left"></i> Annuler</a>
+                    <button type="submit" class="btn btn-primary">
+                        {% if employe %}<i class="fa-solid fa-floppy-disk"></i> Enregistrer les modifications{% else %}<i class="fa-solid fa-plus"></i> Créer l'employé{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

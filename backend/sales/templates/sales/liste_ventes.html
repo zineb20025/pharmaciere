@@ -1,0 +1,64 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Gestion des Ventes - Pharma KAZM{% endblock %}
+
+{% block content %}
+<div class="header-section d-flex justify-content-between align-items-center">
+    <div>
+        <h2 class="fw-bold text-dark">🛒 Gestion des Ventes</h2>
+        <p class="text-muted">Historique de toutes les ventes effectuées.</p>
+    </div>
+    <a href="{% url 'nouvelle_vente' %}" class="btn btn-primary">+ Nouvelle Vente</a>
+</div>
+
+{% if messages %}
+<div class="row">
+    <div class="col-md-12">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<div class="card p-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Employé</th>
+                    <th>Nb. Articles</th>
+                    <th class="text-end">Total (DH)</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vente in ventes %}
+                <tr>
+                    <td class="fw-bold">Vente #{{ vente.id }}</td>
+                    <td>{{ vente.date_vente|date:"d/m/Y H:i" }}</td>
+                    <td>{{ vente.employe.username }}</td>
+                    <td>{{ vente.lignes.count }}</td>
+                    <td class="text-end fw-bold text-success">{{ vente.total }} DH</td>
+                    <td class="text-center">
+                        <a href="{% url 'detail_vente' vente.id %}" class="btn btn-info btn-sm text-white">👁 Détails</a>
+                        {% if request.user.role == 'admin' %}
+                        <a href="{% url 'supprimer_vente' vente.id %}" class="btn btn-danger btn-sm">🗑 Supprimer</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">Aucune vente enregistrée.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+{% endblock %}

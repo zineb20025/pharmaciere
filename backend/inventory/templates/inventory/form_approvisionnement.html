@@ -1,0 +1,54 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Nouvel Approvisionnement - Admin{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card p-4">
+            <h2 class="fw-bold text-dark mb-4">📦 Nouvel Approvisionnement</h2>
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="medicament" class="form-label fw-bold">Médicament <span class="text-danger">*</span></label>
+                    <select class="form-select" id="medicament" name="medicament" required>
+                        <option value="">-- Sélectionner un médicament --</option>
+                        {% for m in medicaments %}
+                        <option value="{{ m.id }}">{{ m.nom }} (Stock: {{ m.quantite_stock }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="fournisseur" class="form-label">Fournisseur</label>
+                    <select class="form-select" id="fournisseur" name="fournisseur">
+                        <option value="">-- Sélectionner un fournisseur --</option>
+                        {% for f in fournisseurs %}
+                        <option value="{{ f.id }}">{{ f.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label for="quantite_recue" class="form-label fw-bold">Quantité Reçue <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" id="quantite_recue" name="quantite_recue" min="1" required>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'liste_approvisionnements' %}" class="btn btn-outline-secondary">← Annuler</a>
+                    <button type="submit" class="btn btn-warning text-dark fw-bold">➕ Enregistrer l'approvisionnement</button>
+                </div>
+            </form>
+        </div>
+</div>
+{% endblock %}

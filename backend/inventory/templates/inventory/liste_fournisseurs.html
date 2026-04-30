@@ -1,0 +1,57 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Gestion des Fournisseurs - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark">🏭 Gestion des Fournisseurs</h2>
+    <a href="{% url 'ajouter_fournisseur' %}" class="btn btn-primary">+ Ajouter un Fournisseur</a>
+</div>
+
+{% if messages %}
+<div class="row mb-3">
+    <div class="col-md-12">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<div class="card p-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Nom</th>
+                    <th>Contact</th>
+                    <th>Téléphone</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in fournisseurs %}
+                <tr>
+                    <td class="fw-bold">{{ f.nom }}</td>
+                    <td>{{ f.contact|default:"—" }}</td>
+                    <td>{{ f.telephone|default:"—" }}</td>
+                    <td class="text-center">
+                        <a href="{% url 'modifier_fournisseur' f.id %}" class="btn btn-sm btn-outline-primary">✏️ Modifier</a>
+                        <a href="{% url 'supprimer_fournisseur' f.id %}" class="btn btn-sm btn-outline-danger ms-1">🗑️ Supprimer</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center py-4 text-muted">Aucun fournisseur enregistré.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+<div class="mt-3">
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">← Retour à l'Administration</a>
+</div>
+{% endblock %}

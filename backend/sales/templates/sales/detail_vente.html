@@ -1,0 +1,46 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Détail Vente #{{ vente.id }} - Pharma KAZM{% endblock %}
+
+{% block content %}
+<div class="header-section d-flex justify-content-between align-items-center">
+    <div>
+        <h2 class="fw-bold text-dark">📄 Détail de la Vente #{{ vente.id }}</h2>
+        <p class="text-muted">Date: {{ vente.date_vente|date:"d/m/Y à H:i" }} | Employé: {{ vente.employe.username }}</p>
+    </div>
+    </div>
+</div>
+
+<div class="card p-4">
+    <h4 class="fw-bold mb-3">Articles vendus</h4>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Médicament</th>
+                    <th class="text-center">Quantité</th>
+                    <th class="text-center">Prix Unitaire (DH)</th>
+                    <th class="text-end">Sous-total (DH)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ligne in vente.lignes.all %}
+                <tr>
+                    <td class="fw-bold">{{ ligne.medicament.nom }}</td>
+                    <td class="text-center">{{ ligne.quantite }}</td>
+                    <td class="text-center">{{ ligne.prix_unitaire }} DH</td>
+                    <td class="text-end fw-bold">{{ ligne.sous_total }} DH</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="table-success">
+                    <td colspan="3" class="text-end fw-bold fs-5">TOTAL :</td>
+                    <td class="text-end fw-bold fs-5 text-success">{{ vente.total }} DH</td>
+                </tr>
+            </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

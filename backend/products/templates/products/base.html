@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Pharmacie{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar { background-color: #2c3e50 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .card { border-radius: 12px; border: none; box-shadow: 0 6px 12px rgba(0,0,0,0.05); transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); }
+        .header-section { margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{% url 'dashboard' %}">💊 Pharma KAZM</a>
+            <div class="navbar-nav ms-auto">
+                {% if user.is_authenticated %}
+            {% if user.role == 'caissier' %}
+                        <a class="nav-link" href="{% url 'nouvelle_vente' %}"><i class="fa-solid fa-cash-register me-1"></i> POS</a>
+                        <a class="nav-link" href="{% url 'liste_ventes' %}"><i class="fa-solid fa-receipt me-1"></i> Ventes</a>
+                    {% else %}
+                        <a class="nav-link" href="{% url 'dashboard' %}"><i class="fa-solid fa-chart-line me-1"></i> Tableau de Bord</a>
+                        <a class="nav-link" href="{% url 'gestion_prix' %}"><i class="fa-solid fa-tags me-1"></i> Gestion des Prix</a>
+                        <a class="nav-link" href="{% url 'liste_ventes' %}"><i class="fa-solid fa-receipt me-1"></i> Ventes</a>
+                        <a class="nav-link" href="{% url 'admin_dashboard' %}"><i class="fa-solid fa-shield-halved me-1"></i> Administration</a>
+                    {% endif %}
+                    {% if user.role == 'admin' %}
+                        <a class="nav-link" href="{% url 'liste_employes' %}"><i class="fa-solid fa-users me-1"></i> Gestion des Employés</a>
+                    {% endif %}
+                    <span class="nav-link text-light">
+                        <i class="fa-solid fa-user me-1"></i> {{ user.username }}
+                        <span class="badge bg-info text-dark ms-1">{{ user.get_role_display }}</span>
+                    </span>
+                    <form method="post" action="{% url 'logout' %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-link nav-link text-warning" style="text-decoration: none;"><i class="fa-solid fa-right-from-bracket me-1"></i> Déconnexion</button>
+                    </form>
+                {% else %}
+                    <a class="nav-link text-info fw-bold" href="{% url 'login' %}"><i class="fa-solid fa-right-to-bracket me-1"></i> Connexion</a>
+                {% endif %}
+            </div>
+    </nav>
+
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

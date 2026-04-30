@@ -1,0 +1,52 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Connexion - Pharma KAZM{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card p-5">
+            <div class="text-center mb-4">
+                <h3 class="fw-bold text-dark">💊 Pharma KAZM</h3>
+                <p class="text-muted">Connexion à votre espace de gestion</p>
+            </div>
+
+            {% if form.errors %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                Nom d'utilisateur ou mot de passe incorrect.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+
+            {% if next %}
+                {% if user.is_authenticated %}
+                <div class="alert alert-warning">
+                    Votre compte n'a pas accès à cette page. Pour continuer, veuillez vous connecter avec un compte autorisé.
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    Veuillez vous connecter pour accéder à cette page.
+                </div>
+                {% endif %}
+            {% endif %}
+
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="id_username" class="form-label fw-bold">Nom d'utilisateur</label>
+                    <input type="text" name="username" id="id_username" class="form-control form-control-lg" placeholder="Entrez votre nom d'utilisateur" required autofocus>
+                </div>
+                <div class="mb-4">
+                    <label for="id_password" class="form-label fw-bold">Mot de passe</label>
+                    <input type="password" name="password" id="id_password" class="form-control form-control-lg" placeholder="Entrez votre mot de passe" required>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg">Se Connecter</button>
+                </div>
+                <input type="hidden" name="next" value="{{ next }}">
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

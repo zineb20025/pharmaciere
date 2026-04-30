@@ -1,0 +1,29 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Supprimer Vente #{{ vente.id }} - Pharma KAZM{% endblock %}
+
+{% block content %}
+<div class="header-section">
+    <h2 class="fw-bold text-dark">⚠️ Confirmer la Suppression</h2>
+    <p class="text-muted">Cette action est irréversible.</p>
+</div>
+
+<div class="card p-4 border-danger">
+    <div class="alert alert-warning">
+        <h5>Vous êtes sur le point de supprimer la <strong>Vente #{{ vente.id }}</strong></h5>
+        <p>Date: {{ vente.date_vente|date:"d/m/Y à H:i" }}<br>
+        Employé: {{ vente.employe.username }}<br>
+        Total: <strong>{{ vente.total }} DH</strong><br>
+        Nombre d'articles: {{ vente.lignes.count }}</p>
+        <p class="mb-0 text-danger fw-bold">Les stocks des médicaments seront restaurés automatiquement.</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="d-flex gap-2">
+            <a href="{% url 'liste_ventes' %}" class="btn btn-outline-secondary">Annuler</a>
+            <button type="submit" class="btn btn-danger">Confirmer la Suppression</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
