@@ -4,8 +4,13 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 import json
 from .models import Medicament
-from sales.models import Vente
+from sales.models import Vente, LigneVente
 from users.decorators import admin_or_pharmacien_required
+
+
+def redirect_to_dashboard(request):
+    """Redirect /products/supprimer/ to dashboard"""
+    return redirect('dashboard')
 
 
 @login_required
@@ -176,4 +181,26 @@ def update_prix(request, medicament_id):
         except (ValueError, json.JSONDecodeError) as e:
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Méthode non autorisée.'})
+
+
+@admin_or_pharmacien_required
+def supprimer_medicament(request, medicament_id):
+    """Supprime un médicament après confirmation"""
+    medicament = get_object_or_404(Medicament, id=medicament_id)
+    
+    # Vérifier si le médicament est référencé dans des ventes
+    if LigneVente.objects.filter(medicament=medicament).exists():
+        messages.error(request, f'Impossible de supprimer "{medicament.nom}". Ce médicament est référencé dans l\'historique des ventes.')
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        medicament.delete()
+        messages.success(request, f'Médicament "{medicament.nom}" supprimé avec succès!')
+        return redirect('dashboard')
+    
+    context = {
+        'medicament': medicament,
+        'has_sales': LigneVente.objects.filter(medicament=medicament).exists()
+    }
+    return render(request, 'products/supprimer_medicament.html', context)
 

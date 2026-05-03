@@ -23,48 +23,48 @@
 
 <div class="row text-center">
     <div class="col-md-4 mb-4">
-        <div class="card p-4 bg-primary text-white">
+        <div class="pharma-card p-4 bg-primary text-white animate-fadeInUp">
             <h5 class="text-uppercase small fw-bold"><i class="fa-solid fa-pills"></i> Total Produits</h5>
-            <p class="display-5 fw-bold">{{ total_medicaments }}</p>
+            <p class="display-5 fw-bold stat-number" data-target="{{ total_medicaments }}"></p>
         </div>
     </div>
     <div class="col-md-4 mb-4">
-        <div class="card p-4 bg-danger text-white">
+        <div class="card p-4 bg-danger text-white animate-fadeInUp">
             <h5 class="text-uppercase small fw-bold"><i class="fa-solid fa-triangle-exclamation"></i> Alertes Stock Bas</h5>
-            <p class="display-5 fw-bold">{{ alertes_stock }}</p>
+            <p class="display-5 fw-bold stat-number" data-target="{{ alertes_stock }}"></p>
         </div>
     </div>
     <div class="col-md-4 mb-4">
-        <div class="card p-4 bg-success text-white">
+        <div class="card p-4 bg-success text-white animate-fadeInUp">
             <h5 class="text-uppercase small fw-bold"><i class="fa-solid fa-cart-shopping"></i> Ventes Totales</h5>
-            <p class="display-5 fw-bold">{{ total_ventes }}</p>
+            <p class="display-5 fw-bold stat-number" data-target="{{ total_ventes }}"></p>
         </div>
     </div>
 </div>
 <div class="row text-center">
     <div class="col-md-4 mb-4">
-        <div class="card p-4 bg-info text-white">
+        <div class="pharma-card p-4 bg-info text-white animate-fadeInUp">
             <h5 class="text-uppercase small fw-bold"><i class="fa-solid fa-warehouse"></i> Valeur Totale du Stock</h5>
-            <p class="display-5 fw-bold">{{ valeur_totale_stock }} DH</p>
+            <p class="display-5 fw-bold stat-number" data-target="{{ valeur_totale_stock }} DH"></p>
         </div>
     </div>
     <div class="col-md-4 mb-4">
-        <div class="card p-4 bg-warning text-dark">
+        <div class="card p-4 bg-warning text-dark animate-fadeInUp">
             <h5 class="text-uppercase small fw-bold"><i class="fa-solid fa-percent"></i> Marge Moyenne</h5>
-            <p class="display-5 fw-bold">{{ marge_moyenne }}%</p>
+            <p class="display-5 fw-bold stat-number" data-target="{{ marge_moyenne }}%"></p>
         </div>
     </div>
     <div class="col-md-4 mb-4">
-        <div class="card p-4 bg-success text-white">
+        <div class="card p-4 bg-success text-white animate-fadeInUp">
             <h5 class="text-uppercase small fw-bold"><i class="fa-solid fa-sack-dollar"></i> Chiffre d'Affaires</h5>
-            <p class="display-5 fw-bold">{{ chiffre_affaires }} DH</p>
+            <p class="display-5 fw-bold stat-number" data-target="{{ chiffre_affaires }} DH"></p>
         </div>
     </div>
 </div>
 
 <div class="row mt-4">
-    <div class="col-md-12">
-        <div class="card p-4">
+        <div class="col-md-12">
+        <div class="pharma-card p-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4 class="fw-bold">🛒 Dernières Ventes</h4>
                 {% if user.role == 'admin' or user.role == 'pharmacien' %}
@@ -108,8 +108,8 @@
 </div>
 
 <div class="row mt-4">
-    <div class="col-md-12">
-        <div class="card p-4">
+        <div class="col-md-12">
+        <div class="pharma-card p-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4 class="fw-bold">📦 État du Stock Actuel</h4>
                 {% if user.role == 'admin' or user.role == 'pharmacien' %}
@@ -159,7 +159,8 @@
                         </td>
                         {% if user.role == 'admin' or user.role == 'pharmacien' %}
                         <td class="text-center">
-                            <a href="{% url 'modifier_medicament' med.id %}" class="btn btn-outline-primary btn-sm">✏️ Modifier</a>
+<a href="{% url 'modifier_medicament' med.id %}" class="btn btn-outline-primary btn-sm me-1">✏️ Modifier</a>
+                            <a href="{% url 'supprimer_medicament' med.id %}" class="btn btn-danger btn-sm">🗑 Supprimer</a>
                         </td>
                         {% endif %}
                     </tr>

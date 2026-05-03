@@ -31,5 +31,6 @@ path('modifier-prix/<int:medicament_id>/', modifier_prix, name='modifier_prix'),
     path('api/update-prix/<int:medicament_id>/', update_prix, name='update_prix'),
     path('ventes/', include('sales.urls')),
     path('comptes/', include('users.urls')),
-    path('inventory/', include('inventory.urls')),
+path('inventory/', include('inventory.urls')),
+    path('products/', include('products.urls')),
 ]
