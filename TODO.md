@@ -1,22 +1,12 @@
-# TODO: Ajouter bouton "Retour en haut" - ✅ COMPLÉTÉ
+# TODO - Correctif "Stock faible"
 
-**Plan exécuté avec succès:**
+- [ ] Comprendre le comportement actuel : 
+  - [ ] Page React « Stock.jsx » filtre « Stock faible » côté client.
+  - [ ] Page React « AlertStock.jsx » charge /products/api/medicaments/ puis filtre < minQty.
+- [ ] Corriger la logique demandée : 
+  - [ ] Quand on clique sur « Stock faible » (dans la page Stock), afficher uniquement les produits avec quantité inférieure au seuil.
+  - [ ] Vérifier que l’état (onlyLowStock / minQty) et l’API renvoient les bons champs (quantite_stock).
+- [ ] Tester : 
+  - [ ] Vérifier manuellement que le tableau affiche uniquement les produits « stock faible » après clic.
+  - [ ] Vérifier aussi la page /alert.
 
-- [x] 1. Créer TODO.md (fait)
-- [x] 2. Éditer `backend/products/templates/products/base.html` : Ajouter CSS, HTML et JS pour le bouton back-to-top
-- [x] 3. Mettre à jour TODO.md : Marquer comme complété
-- [x] 4. Tester : Lancer serveur Django et vérifier sur pages longues (dashboard)
-
-**Fonctionnalités ajoutées:**
-- Bouton flottant "Retour en haut" (icône flèche ↑), position bottom-right
-- Apparaît après 300px de scroll, disparaît en haut
-- Scroll smooth vers le haut au clic
-- Thème pharma (gradient bleu, hover lift, dark mode compatible)
-- Responsive (plus petit sur mobile)
-
-**Commande pour tester:**
-`cd backend && python manage.py runserver`
-
-Visitez http://127.0.0.1:8000/dashboard/ , faites défiler vers le bas → bouton apparaît → cliquez pour remonter.
-
-Aucune autre action requise.

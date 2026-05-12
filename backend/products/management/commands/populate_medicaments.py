@@ -4,7 +4,21 @@ from django.core.management.base import BaseCommand
 from products.models import Medicament
 
 class Command(BaseCommand):
-    help = 'Populate the database with 100 realistic medications'
+    help = 'Add realistic medications to the database (default target: 1284).'
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--count',
+            type=int,
+            default=1284,
+            help='Target number of medications to ensure in DB (only inserts missing ones).',
+        )
+        parser.add_argument(
+            '--skip-existing',
+            action='store_true',
+            default=True,
+            help='If a medicament with the same name exists, do not insert it again.',
+        )
 
     def handle(self, *args, **kwargs):
         # Prix d'achat en Dirhams Marocains (MAD) par catégorie
@@ -147,18 +161,37 @@ class Command(BaseCommand):
             ('Febuxostat 80mg', 'Hypouricémiant de nouvelle génération', 'Anti-inflammatoire'),
         ]
 
+        count = int(kwargs.get('count') or 1284)
+        skip_existing = bool(kwargs.get('skip_existing', True))
+
         random.seed(42)
-        
-        for idx, (nom, description, categorie) in enumerate(medicament_data[:100], 1):
-            # Récupérer la fourchette de prix pour la catégorie (en MAD)
-            prix_min, prix_max = CATEGORY_PRICE_RANGES.get(categorie, (10, 50))
+
+        # on part des données de base, puis on génère des variantes si on a besoin de plus
+        base_len = len(medicament_data)
+        created = 0
+        idx = 0
+
+        while created < count:
+            idx += 1
+            base_index = (idx - 1) % base_len
+            base_nom, base_description, base_categorie = medicament_data[base_index]
+
+            # Générer un nom unique/variant pour éviter les doublons de base.
+            # Exemple: "Paracétamol 500mg" -> "Paracétamol 500mg (Lot 17)"
+            nom = base_nom if idx <= base_len else f"{base_nom} (Lot {idx - base_len})"
+
+            if skip_existing and Medicament.objects.filter(nom=nom).exists():
+                continue
+
+            prix_min, prix_max = CATEGORY_PRICE_RANGES.get(base_categorie, (10, 50))
             prix_achat = round(random.uniform(prix_min, prix_max), 2)
-            
-            # Marge de vente réaliste au Maroc : 20% à 30%
             prix_vente = round(prix_achat * random.uniform(1.20, 1.30), 2)
-            
             date_expiration = datetime.now().date() + timedelta(days=random.randint(180, 1825))
             quantite_stock = random.randint(5, 500)
+
+            description = base_description
+            if idx > base_len:
+                description = f"{base_description} (variante #{idx - base_len})"
 
             Medicament.objects.create(
                 nom=nom,
@@ -166,11 +199,14 @@ class Command(BaseCommand):
                 prix_achat=prix_achat,
                 prix_vente=prix_vente,
                 date_expiration=date_expiration,
-                categorie=categorie,
-                quantite_stock=quantite_stock
+                categorie=base_categorie,
+                quantite_stock=quantite_stock,
             )
-            
-            self.stdout.write(self.style.SUCCESS(f'Created {idx}/100: {nom}'))
 
-        self.stdout.write(self.style.SUCCESS('Successfully populated 100 medications'))
+            created += 1
+            if created % 50 == 0 or created == count:
+                self.stdout.write(self.style.SUCCESS(f'Created {created}/{count} medications (last: {nom})'))
+
+        self.stdout.write(self.style.SUCCESS(f'Successfully created {created} medications (target={count}).'))
+
 

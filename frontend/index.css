@@ -1,0 +1,11 @@
+/*
+  File racine conservé pour Tailwind/Vite.
+  L'app importe en réalité `src/index.css` (voir `src/main.jsx`).
+*/
+/*
+  Ce fichier n’est pas importé par l’app (voir `src/main.jsx`).
+  On évite d’y laisser des directives @tailwind pour ne pas déclencher
+  des erreurs côté éditeur (Unknown at rule).
+*/
+
+
