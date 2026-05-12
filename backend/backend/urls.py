@@ -30,7 +30,6 @@ from products.views import (
 from backend.views import spa_index
 
 
-
 urlpatterns = [
     path('admin/', admin.site.urls),
 
@@ -59,6 +58,3 @@ urlpatterns = [
     # SPA fallback for any other React route (after listing known Django paths above)
     path('<path:rest>', spa_index, name='spa_fallback'),
 ]
-
-
-
