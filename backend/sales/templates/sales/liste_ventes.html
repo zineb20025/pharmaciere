@@ -3,13 +3,16 @@
 {% block title %}Gestion des Ventes - Pharma KAZM{% endblock %}
 
 {% block content %}
+
 <div class="header-section d-flex justify-content-between align-items-center">
     <div>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary mb-3">← Retour au Tableau de Bord</a>
         <h2 class="fw-bold text-dark">🛒 Gestion des Ventes</h2>
         <p class="text-muted">Historique de toutes les ventes effectuées.</p>
     </div>
     <a href="{% url 'nouvelle_vente' %}" class="btn btn-primary">+ Nouvelle Vente</a>
 </div>
+
 
 {% if messages %}
 <div class="row">

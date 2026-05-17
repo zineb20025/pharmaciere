@@ -2,24 +2,325 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Pharmacie{% endblock %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .navbar { background-color: #2c3e50 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .card { border-radius: 12px; border: none; box-shadow: 0 6px 12px rgba(0,0,0,0.05); transition: 0.3s; }
-        .card:hover { transform: translateY(-5px); }
-        .header-section { margin-bottom: 30px; }
+        :root {
+            /* Pharmacy Light Theme */
+            --pharma-primary: #0d6efd;
+            --pharma-primary-dark: #0b5ed7;
+            --pharma-success: #198754;
+            --pharma-success-dark: #157347;
+            --pharma-info: #0dcaf0;
+            --pharma-warning: #ffc107;
+            --pharma-danger: #dc3545;
+            --pharma-bg: #f8f9fa;
+            --pharma-card-bg: #ffffff;
+            --pharma-text: #212529;
+            --pharma-border: #dee2e6;
+            --pharma-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            --pharma-shadow-lg: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            --border-radius: 0.75rem;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --pharma-bg: #0f0f23;
+            --pharma-card-bg: #1a1b2e;
+            --pharma-text: #e9ecef;
+            --pharma-border: #373b47;
+            --pharma-primary: #4dabf7;
+            --pharma-success: #10b981;
+            --pharma-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--pharma-bg) 0%, #e9ecef 100%);
+            font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+            color: var(--pharma-text);
+            line-height: 1.6;
+            min-height: 100vh;
+            transition: var(--transition);
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--pharma-primary) 0%, var(--pharma-primary-dark) 100%) !important;
+            box-shadow: var(--pharma-shadow-lg) !important;
+            backdrop-filter: blur(10px);
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+        }
+
+        .nav-link {
+            transition: var(--transition);
+            border-radius: var(--border-radius);
+            margin: 0 0.25rem;
+            padding: 0.5rem 1rem !important;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255,255,255,0.1);
+            transform: translateY(-1px);
+        }
+
+        .pharma-card {
+            border: none !important;
+            border-radius: var(--border-radius) !important;
+            background: var(--pharma-card-bg) !important;
+            box-shadow: var(--pharma-shadow-lg) !important;
+            transition: var(--transition);
+            overflow: hidden;
+        }
+
+        /* FIX for dashboard stat cards: preserve Bootstrap colored backgrounds and text contrast in BOTH light/dark modes */
+        .pharma-card.bg-primary,
+        .pharma-card.bg-info,
+        .pharma-card.bg-success,
+        .pharma-card.bg-danger,
+        .pharma-card.bg-warning {
+            background-color: inherit !important;
+            color: inherit !important;
+            border-color: transparent !important;
+        }
+
+        /* Ensure white text on colored cards stays visible in dark mode too */
+        [data-theme="dark"] .pharma-card.bg-primary,
+        [data-theme="dark"] .pharma-card.bg-info,
+        [data-theme="dark"] .pharma-card.bg-success,
+        [data-theme="dark"] .pharma-card.bg-danger {
+            color: #ffffff !important;
+            filter: brightness(1.05);
+        }
+
+        [data-theme="dark"] .pharma-card.bg-warning {
+            color: #212529 !important;
+        }
+
+        /* Hover effect for both pharma-card and dashboard stat cards (.card) */
+        .pharma-card:hover, 
+        .card.p-4:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 1rem 3rem rgba(0,0,0,0.175) !important;
+        }
+
+        /* Dark mode hover shadow adjustment */
+        [data-theme="dark"] .pharma-card:hover, 
+        [data-theme="dark"] .card.p-4:hover {
+            box-shadow: 0 1rem 3rem rgba(0,0,0,0.4) !important;
+        }
+
+        .pharma-card .card-header {
+            background: linear-gradient(135deg, var(--pharma-primary), var(--pharma-primary-dark));
+            color: white;
+            font-weight: 700;
+            border: none !important;
+        }
+
+        .header-section {
+            margin-bottom: 2.5rem;
+            padding: 2rem 0;
+            border-bottom: 3px solid var(--pharma-primary);
+            position: relative;
+        }
+
+        .header-section::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--pharma-primary), var(--pharma-success));
+        }
+
+        .pharma-table {
+            background: var(--pharma-card-bg);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--pharma-shadow);
+        }
+
+        .pharma-table th {
+            background: linear-gradient(135deg, var(--pharma-primary), var(--pharma-primary-dark));
+            color: white !important;
+            font-weight: 600;
+            border: none;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .pharma-table td {
+            border-color: var(--pharma-border);
+            vertical-align: middle;
+        }
+
+        .btn-pharma {
+            border-radius: 50px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+            transition: var(--transition);
+            box-shadow: var(--pharma-shadow);
+            border: none;
+        }
+
+        .btn-pharma:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--pharma-shadow-lg);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .spinner-pharma {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--pharma-border);
+            border-top: 4px solid var(--pharma-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Print Styles */
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; }
+            .pharma-card { box-shadow: none !important; break-inside: avoid; }
+            .pharma-table { font-size: 0.85rem; }
+        }
+
+        /* Dark Mode Toggle */
+        .dark-mode-toggle {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .pharma-card { margin-bottom: 1rem; }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fadeInUp {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Badge Improvements */
+        .badge {
+            padding: 0.5em 0.75em;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+
+        /* Form Enhancements */
+        .form-control-pharma:focus {
+            border-color: var(--pharma-primary);
+            box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.25);
+            transform: scale(1.02);
+        }
+
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, var(--pharma-primary), var(--pharma-primary-dark));
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: var(--pharma-shadow-lg);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: var(--transition);
+            text-decoration: none;
+            z-index: 1000;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 1rem 2rem rgba(0,0,0,0.2);
+            color: white;
+        }
+
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        [data-theme="dark"] .back-to-top {
+            background: linear-gradient(135deg, var(--pharma-primary), var(--pharma-primary-dark));
+            box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.4);
+        }
+
+        @media (max-width: 768px) {
+            .back-to-top {
+                bottom: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+                font-size: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark mb-4">
         <div class="container">
             <a class="navbar-brand fw-bold" href="{% url 'dashboard' %}">💊 Pharma KAZM</a>
+            <button class="btn btn-sm dark-mode-toggle text-light ms-3" id="darkToggle" title="Toggle Dark Mode">
+                <i class="fa-solid fa-moon-stars fa-sm"></i>
+            </button>
             <div class="navbar-nav ms-auto">
                 {% if user.is_authenticated %}
-            {% if user.role == 'caissier' %}
+                    {% if user.role == 'caissier' %}
                         <a class="nav-link" href="{% url 'nouvelle_vente' %}"><i class="fa-solid fa-cash-register me-1"></i> POS</a>
                         <a class="nav-link" href="{% url 'liste_ventes' %}"><i class="fa-solid fa-receipt me-1"></i> Ventes</a>
                     {% else %}
@@ -43,6 +344,7 @@
                     <a class="nav-link text-info fw-bold" href="{% url 'login' %}"><i class="fa-solid fa-right-to-bracket me-1"></i> Connexion</a>
                 {% endif %}
             </div>
+        </div>
     </nav>
 
     <div class="container">
@@ -50,7 +352,124 @@
         {% endblock %}
     </div>
 
+    <!-- Back to Top Button -->
+    <a href="#" class="back-to-top" id="backToTop" title="Retour en haut">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Dark Mode Toggle
+        const darkToggle = document.getElementById('darkToggle');
+        const html = document.documentElement;
+        
+        // Load saved theme or system preference
+        if (localStorage.getItem('theme') === 'dark' || 
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.setAttribute('data-theme', 'dark');
+            darkToggle.querySelector('i').className = 'fa-solid fa-sun fa-sm';
+        }
+        
+        darkToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                darkToggle.querySelector('i').className = 'fa-solid fa-moon-stars fa-sm';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                darkToggle.querySelector('i').className = 'fa-solid fa-sun fa-sm';
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+        
+        // Listen for system changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('theme')) {
+                if (e.matches) {
+                    html.setAttribute('data-theme', 'dark');
+                    darkToggle.querySelector('i').className = 'fa-solid fa-sun fa-sm';
+                } else {
+                    html.removeAttribute('data-theme');
+                    darkToggle.querySelector('i').className = 'fa-solid fa-moon-stars fa-sm';
+                }
+            }
+        });
+
+        // Back to Top Button Functionality
+        const backToTopBtn = document.getElementById('backToTop');
+        if (backToTopBtn) {
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 300) {
+                    backToTopBtn.classList.add('show');
+                } else {
+                    backToTopBtn.classList.remove('show');
+                }
+            });
+
+            backToTopBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+    </script>
+
+    <!-- Dynamic Count-Up Animation for Dashboard Stats -->
+    <script>
+        function animateStats() {
+            const stats = document.querySelectorAll('.stat-number');
+            stats.forEach(stat => {
+                const target = stat.getAttribute('data-target');
+                if (!target) return;
+                
+                let start = 0;
+                const duration = 2000; // 2 seconds
+                const increment = parseFloat(target.replace(/[^\d.-]/g, '')) / (duration / 16);
+                const isPercent = target.includes('%');
+                const isDH = target.includes('DH');
+                
+                const timer = setInterval(() => {
+                    start += increment;
+                    if (start >= parseFloat(target.replace(/[^\d.-]/g, ''))) {
+                        start = parseFloat(target.replace(/[^\d.-]/g, ''));
+                        clearInterval(timer);
+                    }
+                    
+                    let display = Math.floor(start);
+                    if (isPercent) {
+                        stat.textContent = display + '%';
+                    } else if (isDH) {
+                        stat.textContent = display.toLocaleString('fr-FR') + ' DH';
+                    } else {
+                        stat.textContent = display.toLocaleString('fr-FR');
+                    }
+                }, 16);
+            });
+        }
+
+        // Run animation when stats are visible (for scroll effect if needed)
+        function observerCallback(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateStats();
+                    observer.unobserve(entry.target);
+                }
+            });
+        }
+
+        const observer = new IntersectionObserver(observerCallback);
+        const dashboardSection = document.querySelector('.row.text-center');
+        if (dashboardSection) {
+            observer.observe(dashboardSection);
+        } else {
+            // Fallback: run on load
+            window.addEventListener('load', animateStats);
+        }
+    </script>
+
 </body>
 </html>
-

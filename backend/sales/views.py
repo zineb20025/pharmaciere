@@ -4,9 +4,7 @@ from django.contrib import messages
 from django.db import transaction
 from .models import Vente, LigneVente
 from products.models import Medicament
-from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
-import json
+from django.http import HttpResponse
 
 @login_required
 def liste_ventes(request):
@@ -24,11 +22,27 @@ def nouvelle_vente(request):
         medicament_id = request.POST.get('medicament_id')
         quantite = int(request.POST.get('quantite', 0))
         prix_unitaire = float(request.POST.get('prix_unitaire', 0))
-        
+
         try:
+            medicament = get_object_or_404(Medicament, id=medicament_id)
+
+            if medicament.necessite_ordonnance:
+                ordonnance_file = request.FILES.get('ordonnance_file')
+                if not ordonnance_file:
+                    messages.error(request, 'Ce médicament nécessite une ordonnance valide.')
+                    return render(request, 'sales/nouvelle_vente.html', {
+                        'medicaments': Medicament.objects.filter(quantite_stock__gt=0),
+                        'categories': categories
+                    }, status=422)
+                if not ordonnance_file.name.lower().endswith(('.pdf', '.jpg', '.jpeg', '.png', '.gif')):
+                    messages.error(request, 'Format de fichier d\'ordonnance invalide. Utilisez PDF ou image.')
+                    return render(request, 'sales/nouvelle_vente.html', {
+                        'medicaments': Medicament.objects.filter(quantite_stock__gt=0),
+                        'categories': categories
+                    }, status=422)
+
             with transaction.atomic():
                 vente = Vente.objects.create(employe=request.user, nom_client=nom_client)
-                medicament = Medicament.objects.get(id=medicament_id)
                 LigneVente.objects.create(
                     vente=vente,
                     medicament=medicament,
@@ -39,7 +53,7 @@ def nouvelle_vente(request):
                 return redirect('facture_vente', vente_id=vente.id)
         except Exception as e:
             messages.error(request, f'Erreur: {str(e)}')
-    
+
     medicaments = Medicament.objects.filter(quantite_stock__gt=0)
     return render(request, 'sales/nouvelle_vente.html', {
         'medicaments': medicaments,

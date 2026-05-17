@@ -9,6 +9,7 @@ class Medicament(models.Model):
     date_expiration = models.DateField()
     categorie = models.CharField(max_length=50)
     quantite_stock = models.IntegerField(default=0)
+    necessite_ordonnance = models.BooleanField(default=False, verbose_name='Nécessite ordonnance')
 
     # Pour afficher le nom du médicament dans l'interface admin
     def __str__(self):

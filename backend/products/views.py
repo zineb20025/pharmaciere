@@ -4,8 +4,13 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 import json
 from .models import Medicament
-from sales.models import Vente
+from sales.models import Vente, LigneVente
 from users.decorators import admin_or_pharmacien_required
+
+
+def redirect_to_dashboard(request):
+    """Redirect /products/supprimer/ to dashboard"""
+    return redirect('dashboard')
 
 
 @login_required
@@ -13,30 +18,55 @@ def dashboard(request):
     total_medicaments = Medicament.objects.count()
     alertes_stock = Medicament.objects.filter(quantite_stock__lt=10).count()
     total_ventes = Vente.objects.count()
-    
+
     # On récupère tous les médicaments pour les afficher
     liste_medicaments = Medicament.objects.all()
-    
+
     # Calcul de la valeur totale du stock et de la marge moyenne
     valeur_totale_stock = sum(m.valeur_stock for m in Medicament.objects.all())
     marges = [m.marge_percent for m in Medicament.objects.all()]
     marge_moyenne = round(sum(marges) / len(marges), 2) if marges else 0
-    
+
     # Chiffre d'affaires et dernières ventes
     chiffre_affaires = sum(v.total for v in Vente.objects.all())
-    dernieres_ventes = Vente.objects.prefetch_related('lignes__medicament').order_by('-date_vente')[:5]
-    
+    dernieres_ventes = Vente.objects.prefetch_related("lignes__medicament").order_by("-date_vente")[:5]
+
     context = {
-        'total_medicaments': total_medicaments,
-        'alertes_stock': alertes_stock,
-        'total_ventes': total_ventes,
-        'liste_medicaments': liste_medicaments,
-        'valeur_totale_stock': valeur_totale_stock,
-        'marge_moyenne': marge_moyenne,
-        'chiffre_affaires': chiffre_affaires,
-        'dernieres_ventes': dernieres_ventes,
+        "total_medicaments": total_medicaments,
+        "alertes_stock": alertes_stock,
+        "total_ventes": total_ventes,
+        "liste_medicaments": liste_medicaments,
+        "valeur_totale_stock": valeur_totale_stock,
+        "marge_moyenne": marge_moyenne,
+        "chiffre_affaires": chiffre_affaires,
+        "dernieres_ventes": dernieres_ventes,
     }
-    return render(request, 'products/dashboard.html', context)
+    return render(request, "products/dashboard.html", context)
+
+
+def api_medicaments(request):
+    """Retour JSON pour la page /stock (frontend React)."""
+    total_medicaments = Medicament.objects.count()
+    medicaments = Medicament.objects.all().order_by("nom")
+
+    return JsonResponse(
+        {
+            "total_medicaments": total_medicaments,
+            "medicaments": [
+                {
+                    "id": m.id,
+                    "nom": m.nom,
+                    "categorie": m.categorie,
+                    "quantite_stock": m.quantite_stock,
+                    "prix_achat": float(m.prix_achat),
+                    "prix_vente": float(m.prix_vente),
+                    "date_expiration": m.date_expiration.isoformat() if m.date_expiration else None,
+                }
+                for m in medicaments
+            ],
+        }
+    )
+
 
 
 @admin_or_pharmacien_required
@@ -176,4 +206,26 @@ def update_prix(request, medicament_id):
         except (ValueError, json.JSONDecodeError) as e:
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Méthode non autorisée.'})
+
+
+@admin_or_pharmacien_required
+def supprimer_medicament(request, medicament_id):
+    """Supprime un médicament après confirmation"""
+    medicament = get_object_or_404(Medicament, id=medicament_id)
+    
+    # Vérifier si le médicament est référencé dans des ventes
+    if LigneVente.objects.filter(medicament=medicament).exists():
+        messages.error(request, f'Impossible de supprimer "{medicament.nom}". Ce médicament est référencé dans l\'historique des ventes.')
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        medicament.delete()
+        messages.success(request, f'Médicament "{medicament.nom}" supprimé avec succès!')
+        return redirect('dashboard')
+    
+    context = {
+        'medicament': medicament,
+        'has_sales': LigneVente.objects.filter(medicament=medicament).exists()
+    }
+    return render(request, 'products/supprimer_medicament.html', context)
 

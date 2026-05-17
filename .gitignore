@@ -27,6 +27,8 @@ wheels/
 *.log
 local_settings.py
 db.sqlite3
+# Ignore the SQLite DB in backend (do not force-track)
+# backend/db.sqlite3
 
 # IDE
 .vscode/

@@ -20,7 +20,7 @@
                     {% endfor %}
                 {% endif %}
 
-                <form method="post" id="venteForm">
+                <form method="post" id="venteForm" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
@@ -48,12 +48,22 @@
                             <select class="form-select" id="medicamentSelect" name="medicament_id">
                                 <option value="">-- Sélectionner un médicament --</option>
                                 {% for med in medicaments %}
-                                    <option value="{{ med.id }}" data-categorie="{{ med.categorie }}" data-prix="{{ med.prix_vente }}" style="display: block;">
+                                    <option value="{{ med.id }}" data-categorie="{{ med.categorie }}" data-prix="{{ med.prix_vente }}" data-necessite="{{ med.necessite_ordonnance }}" style="display: block;">
 {{ med.nom }} ({{ med.prix_vente }} DH)
                                     </option>
                                 {% endfor %}
                             </select>
                         </div>
+                    </div>
+                    <div class="row g-3 mb-3" id="ordonnanceFileGroup" style="display: none;">
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Ordonnance</label>
+                            <input type="file" class="form-control" id="ordonnance_file" name="ordonnance_file" accept=".pdf,image/*">
+                            <div class="form-text">Ce médicament nécessite une ordonnance. Téléchargez une image ou un PDF.</div>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning" id="prescriptionNotice" style="display: none;">
+                        Ce médicament nécessite une ordonnance valide pour pouvoir finaliser la vente.
                     </div>
 
                     <div class="row g-3 mb-4">
@@ -93,6 +103,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const prixUnitaire = document.getElementById('prix_unitaire');
     const total = document.getElementById('total');
     const submitBtn = document.getElementById('submitBtn');
+    const ordonnanceFileGroup = document.getElementById('ordonnanceFileGroup');
+    const ordonnanceFile = document.getElementById('ordonnance_file');
+    const prescriptionNotice = document.getElementById('prescriptionNotice');
 
     // Filtrer médicaments par catégorie
     categorieSelect.addEventListener('change', filterMedicaments);
@@ -103,6 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
             option.style.display = (cat === '' || option.dataset.categorie === cat) ? 'block' : 'none';
         });
         medicamentSelect.value = '';
+        updateOrdonnanceRequirement();
         updateTotal();
     }
 
@@ -110,18 +124,32 @@ document.addEventListener('DOMContentLoaded', function() {
     medicamentSelect.addEventListener('change', function() {
         const prix = this.options[this.selectedIndex].dataset.prix;
         prixUnitaire.value = prix || 0;
+        updateOrdonnanceRequirement();
         updateTotal();
     });
 
     quantite.addEventListener('input', updateTotal);
     prixUnitaire.addEventListener('input', updateTotal);
+    ordonnanceFile.addEventListener('change', updateTotal);
+
+    function updateOrdonnanceRequirement() {
+        const selected = medicamentSelect.selectedOptions[0];
+        const requiresOrdonnance = selected && selected.dataset.necessite === 'True';
+        ordonnanceFileGroup.style.display = requiresOrdonnance ? 'block' : 'none';
+        prescriptionNotice.style.display = requiresOrdonnance ? 'block' : 'none';
+        if (!requiresOrdonnance) {
+            ordonnanceFile.value = '';
+        }
+    }
 
     function updateTotal() {
         const qte = parseInt(quantite.value) || 0;
         const prix = parseFloat(prixUnitaire.value) || 0;
         const tot = qte * prix;
         total.value = tot.toLocaleString('fr-FR') + ' DH';
-        submitBtn.disabled = !medicamentSelect.value || qte <= 0 || prix <= 0;
+        const requiresOrdonnance = medicamentSelect.selectedOptions[0] && medicamentSelect.selectedOptions[0].dataset.necessite === 'True';
+        const ordonnanceOk = !requiresOrdonnance || (ordonnanceFile && ordonnanceFile.files.length > 0);
+        submitBtn.disabled = !medicamentSelect.value || qte <= 0 || prix <= 0 || !ordonnanceOk;
     }
 
     // Submit validation
@@ -129,6 +157,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!medicamentSelect.value || !quantite.value || !prixUnitaire.value) {
             e.preventDefault();
             alert('Veuillez remplir tous les champs !');
+            return;
+        }
+        const requiresOrdonnance = medicamentSelect.selectedOptions[0] && medicamentSelect.selectedOptions[0].dataset.necessite === 'True';
+        if (requiresOrdonnance && (!ordonnanceFile || ordonnanceFile.files.length === 0)) {
+            e.preventDefault();
+            alert('Ce médicament nécessite une ordonnance valide.');
         }
     });
 });
