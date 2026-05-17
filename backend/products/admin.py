@@ -4,9 +4,9 @@ from .models import Medicament
 
 @admin.register(Medicament)
 class MedicamentAdmin(admin.ModelAdmin):
-    list_display = ('nom', 'categorie', 'prix_achat', 'prix_vente', 'marge_percent', 'quantite_stock_coloree')
-    list_editable = ('prix_achat', 'prix_vente')
-    list_filter = ('categorie',)
+    list_display = ('nom', 'categorie', 'prix_achat', 'prix_vente', 'necessite_ordonnance', 'marge_percent', 'quantite_stock_coloree')
+    list_editable = ('prix_achat', 'prix_vente', 'necessite_ordonnance')
+    list_filter = ('categorie', 'necessite_ordonnance')
     search_fields = ('nom', 'categorie')
     ordering = ('nom',)
 
